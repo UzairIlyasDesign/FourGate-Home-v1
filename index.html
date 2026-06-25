@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="author" content="Muhammad Uzair Ilyas">
+<meta name="copyright" content="© 2026 Muhammad Uzair Ilyas. All rights reserved.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FourGate — Agricultural Decision System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Inter:ital,wght@0,300;0,400;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:      #111111;
+    --white:    #FAFBFC;
+    --page:     #FFFFFF;
+    --muted:    #636363;
+    --faint:    #B0B0B0;
+    --rule:     #DCDCDC;
+    --grid-ln:  rgba(0,80,200,0.055);
+    --grid-maj: rgba(0,80,200,0.10);
+    --mono:     'IBM Plex Mono', monospace;
+    --sans:     'Inter', sans-serif;
+    --serif:    'Inter', 'Times New Roman', serif;
+  }
+
+  html, body {
+    min-height: 100%;
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* GRAPH PAPER CANVAS */
+  body {
+    background-color: var(--white);
+    background-image:
+      linear-gradient(var(--grid-maj) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-maj) 1px, transparent 1px),
+      linear-gradient(var(--grid-ln) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-ln) 1px, transparent 1px);
+    background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+    background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+  }
+
+  /* OUTER WRAPPER */
+  .wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 64px 24px 80px;
+    gap: 0;
+  }
+
+  /* ── BRAND HEADER — NOTEBOOK PAGE ── */
+  .brand {
+    background: var(--page);
+    border: 1px solid var(--rule);
+    box-shadow: 0 2px 16px rgba(0,0,80,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    text-align: center;
+    max-width: 560px;
+    width: 100%;
+    padding: 52px 52px 48px;
+    margin-bottom: 52px;
+  }
+
+  .edition {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--faint);
+    display: block;
+    margin-bottom: 24px;
+  }
+
+  .brand-name {
+    font-family: var(--serif);
+    font-size: clamp(32px, 6vw, 48px);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .brand-name em { font-style: italic; font-weight: 300; }
+
+  .brand-rule {
+    width: 32px;
+    height: 1.5px;
+    background: var(--ink);
+    margin: 20px auto 22px;
+  }
+
+  .brand-desc {
+    font-family: var(--sans);
+    font-size: clamp(12px, 2vw, 13.5px);
+    font-weight: 300;
+    line-height: 1.9;
+    color: var(--muted);
+    max-width: 400px;
+    margin: 0 auto 24px;
+    text-align: left;
+  }
+
+  .brand-desc strong { font-weight: 600; color: var(--ink); }
+
+  .cover-meta {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-top: 4px;
+  }
+
+  /* ── CIRCLE GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(20px, 4vw, 52px);
+    width: min(92vw, 560px);
+    margin-bottom: 40px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: 1.5px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--ink);
+    overflow: hidden;
+    background: var(--page);
+    box-shadow: 0 1px 6px rgba(0,0,80,0.05);
+    transition: border-color 0.5s ease, transform 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .card:hover,
+  .card:focus-visible {
+    border-color: var(--ink);
+    transform: scale(1.025);
+    box-shadow: 0 6px 28px rgba(0,0,80,0.10), 0 2px 8px rgba(0,0,0,0.06);
+    outline: none;
+  }
+
+  .card:focus-visible {
+    box-shadow: 0 0 0 4px var(--white), 0 0 0 6px var(--ink);
+  }
+
+  /* Gate curtains */
+  .curtain-left,
+  .curtain-right {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    background: var(--ink);
+    transition: transform 0.55s cubic-bezier(0.77, 0, 0.175, 1);
+    z-index: 1;
+  }
+
+  .curtain-left  { left: 0;  transform: translateX(0); }
+  .curtain-right { right: 0; transform: translateX(0); }
+
+  .curtain-left::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 15%;
+    height: 70%;
+    width: 1px;
+    background: rgba(250,251,252,0.10);
+  }
+
+  .card:hover .curtain-left,
+  .card:focus-visible .curtain-left  { transform: translateX(-100%); }
+
+  .card:hover .curtain-right,
+  .card:focus-visible .curtain-right { transform: translateX(100%); }
+
+  .card-number {
+    position: relative;
+    z-index: 2;
+    font-family: var(--mono);
+    font-size: clamp(36px, 9vw, 64px);
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--white);
+    transition: opacity 0.2s ease 0.1s;
+    pointer-events: none;
+  }
+
+  .card:hover .card-number,
+  .card:focus-visible .card-number {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .card-info {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16%;
+    opacity: 0;
+    transition: opacity 0.25s ease 0.35s;
+  }
+
+  .card:hover .card-info,
+  .card:focus-visible .card-info { opacity: 1; }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: clamp(7px, 1.6vw, 10px);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 0.85em;
+  }
+
+  .card-question {
+    font-family: var(--serif);
+    font-size: clamp(9px, 2vw, 12px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--rule);
+  }
+
+  /* FLOW LABEL */
+  .foot {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--faint);
+    text-align: center;
+    margin-bottom: 52px;
+  }
+
+  /* ── CLOSING — NOTEBOOK PAGE ── */
+  .closing-wrap {
+    background: var(--page);
+    border: 1px solid var(--rule);
+    box-shadow: 0 2px 16px rgba(0,0,80,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    width: min(92vw, 560px);
+    padding: 48px 52px 52px;
+  }
+
+  .closing-inner {
+    border-top: 1.5px solid var(--ink);
+    padding-top: 40px;
+  }
+
+  /* ── REDUCED MOTION ── */
+  @media (prefers-reduced-motion: reduce) {
+    .card, .curtain-left, .curtain-right,
+    .card-number, .card-info { transition: none; }
+    .card:hover, .card:focus-visible { transform: none; }
+  }
+
+  @media (max-width: 480px) {
+    .brand { padding: 36px 28px 36px; }
+    .closing-wrap { padding: 32px 24px 40px; }
+    .grid { gap: 14px; }
+    .brand-desc { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- HEADER — NOTEBOOK PAGE -->
+  <header class="brand">
+    <span class="edition">FourGate Decision System · 2026</span>
+    <h1 class="brand-name">Four<em>Gate</em></h1>
+    <div class="brand-rule"></div>
+    <p class="brand-desc">
+      Most farm decisions are made on <strong>habit, neighbour advice, and last season's price</strong> — even when the capital, land, and water committed are irreversible.<br><br>
+      FourGate is a four-gate planning system that takes a farm from raw conditions to a <strong>clear grow / don't grow decision</strong> — with a kill&thinsp;/&thinsp;proceed check at every gate.<br><br>
+      Works for any crop, any country, any scale. Complete all sections honestly. <em>The verdict is only as good as your inputs.</em>
+    </p>
+    <div class="cover-meta">
+      Muhammad Uzair Ilyas · Agricultural Planning Framework
+    </div>
+  </header>
+
+  <!-- CIRCLE GRID -->
+  <div class="grid">
+
+    <a class="card" href="https://uzairilyasdesign.github.io/FourGate-One/" aria-label="Gate 01: Crop and Land Fit">
+      <span class="curtain-left"></span>
+      <span class="curtain-right"></span>
+      <span class="card-number">01</span>
+      <span class="card-info">
+        <span class="card-title">Crop &amp; Land Fit</span>
+        <span class="card-question">What should I grow — and does my land actually support it?</span>
+      </span>
+    </a>
+
+    <a class="card" href="https://uzairilyasdesign.github.io/FourGate-Two/" aria-label="Gate 02: Cost and Input Structure">
+      <span class="curtain-left"></span>
+      <span class="curtain-right"></span>
+      <span class="card-number">02</span>
+      <span class="card-info">
+        <span class="card-title">Cost &amp; Input Structure</span>
+        <span class="card-question">How do I grow it within my capital and soil constraints?</span>
+      </span>
+    </a>
+
+    <a class="card" href="https://uzairilyasdesign.github.io/FourGate-Three/" aria-label="Gate 03: Risk and Break-Even">
+      <span class="curtain-left"></span>
+      <span class="curtain-right"></span>
+      <span class="card-number">03</span>
+      <span class="card-info">
+        <span class="card-title">Risk &amp; Break-Even</span>
+        <span class="card-question">What can go wrong — and does the farm survive if it does?</span>
+      </span>
+    </a>
+
+    <a class="card" href="https://uzairilyasdesign.github.io/FourGate-Four/" aria-label="Gate 04: Market and Exit Strategy">
+      <span class="curtain-left"></span>
+      <span class="curtain-right"></span>
+      <span class="card-number">04</span>
+      <span class="card-info">
+        <span class="card-title">Market &amp; Exit Strategy</span>
+        <span class="card-question">Where will I sell, at what price, and what is my plan for next season?</span>
+      </span>
+    </a>
+
+  </div>
+
+  <p class="foot">Crop &amp; Land → Cost &amp; Inputs → Risk &amp; Break-Even → Market &amp; Exit</p>
+
+  <!-- CLOSING — NOTEBOOK PAGE -->
+  <div class="closing-wrap">
+    <div class="closing-inner">
+
+      <p style="font-size:19px; font-weight:400; font-style:italic; line-height:1.75; color:var(--muted); max-width:480px;">
+        Every agricultural season has three stages — planning, growing, and harvest.
+      </p>
+
+      <p style="font-size:15px; font-weight:400; line-height:1.85; color:var(--muted); margin-top:24px;">
+        Find a problem at planning: fix it by switching crops, adjusting inputs, or securing a better buyer.<br>
+        Find it during the growing season: it costs money and reduces yield but can still be managed.<br>
+        Find it at harvest: the loss is already done. Nothing is recoverable.
+      </p>
+
+      <p style="font-size:16px; font-weight:700; line-height:1.75; color:var(--ink); margin-top:24px;">
+        This framework exists for the planning stage.<br>
+        Use it before you buy seed, hire labour, or commit water.<br>
+        Planning is the only stage where failure is still cheap to correct.
+      </p>
+
+      <p style="font-size:10px; font-weight:400; letter-spacing:0.04em; color:var(--muted); margin-top:56px; line-height:1.8; max-width:480px;">
+        This is an educational decision-making tool for agricultural planning and farm structuring. It does not constitute financial, agronomic, or legal advice. The verdict is generated strictly from user-entered data. All farming, investment, and operational decisions remain the sole responsibility of the user.
+      </p>
+
+      <p style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:400; letter-spacing:0.04em; color:var(--faint); margin-top:24px; line-height:2;">
+        © 2026 Muhammad Uzair Ilyas. All rights reserved.<br>
+        The FourGate Agricultural Decision Framework is proprietary intellectual property. Redistribution or reproduction in any form is prohibited.<br>
+        linkedin.com/in/muhammad-uzair-ilyas-a66412280
+      </p>
+
+    </div>
+  </div>
+
+</div><!-- end .wrap -->
+
+</body>
+</html>
